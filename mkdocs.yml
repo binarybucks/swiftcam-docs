@@ -41,7 +41,9 @@ markdown_extensions:
   - footnotes
   - toc:
       permalink: true
-  - pymdownx.highlight
+  - pymdownx.highlight:
+      pygments_style: github
+      pygments_dark_style: github
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
@@ -52,7 +54,7 @@ nav:
   - Home: index.md
   - Getting started:
     - Backend configuration: backend-configuration.md
-    - App connection configuration: app-connection-configuration.md
+    - App configuration: server-configuration.md
     - Adding cameras: adding-cameras.md
   - Push Notifications: push-notifications.md
 

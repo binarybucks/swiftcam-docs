@@ -1,4 +1,4 @@
-# Swiftcam App Connection Configuration
+# Swiftcam App Server Configuration
 
 This is the second step in setup, after configuring `go2rtc`.
 
