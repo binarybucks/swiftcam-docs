@@ -8,8 +8,17 @@ site_dir: ./site
 theme:
   name: material
   language: en
-  favicon: assets/images/favicon.png
-  logo: assets/images/favicon.png
+  favicon: images/favicon.png
+  logo: images/favicon.png
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
     - navigation.sections
     - navigation.expand
