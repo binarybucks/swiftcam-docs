@@ -43,7 +43,6 @@ markdown_extensions:
       permalink: true
   - pymdownx.highlight:
       pygments_style: github
-      pygments_dark_style: github
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
