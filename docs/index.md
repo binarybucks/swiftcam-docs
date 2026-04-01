@@ -1,0 +1,2 @@
+# Swiftcam Documentation
+

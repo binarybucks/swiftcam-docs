@@ -1,0 +1,48 @@
+site_name: Swiftcam Documentation
+site_description: Swiftcam push notification docs and Swiftcam server install notes
+site_url: https://swiftcam.example.com/docs/
+
+docs_dir: ./docs
+site_dir: ./site
+
+theme:
+  name: material
+  language: en
+  favicon: assets/images/favicon.png
+  logo: assets/images/favicon.png
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Getting started:
+    - Backend configuration: backend-configuration.md
+    - App connection configuration: app-connection-configuration.md
+    - Adding cameras: adding-cameras.md
+  - Push Notifications: push-notifications.md
+
+  - Advanced configuration:
+    - Swiftcam Server: swiftcam-server.md
+    - Multi server: multi-server.md
+    - Advanced camera settings: advanced-camera-settings.md
+
+  - Privacy policy: privacy.md
