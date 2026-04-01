@@ -8,6 +8,7 @@ site_dir: ./site
 theme:
   palette:
     - media: "(prefers-color-scheme)"
+      scheme: default     
       toggle:
         icon: lucide/sun-moon
         name: Switch to light mode
