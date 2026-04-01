@@ -6,7 +6,10 @@ docs_dir: ./docs
 site_dir: ./site
 
 theme:
-  name: material
+  palette:
+    primary: custom
+    accent: custom
+    
   language: en
   favicon: assets/images/favicon.png
   logo: assets/images/favicon.png
