@@ -1,6 +1,6 @@
 site_name: Swiftcam Documentation
 site_description: Swiftcam push notification docs and Swiftcam server install notes
-site_url: https://swiftcam.example.com/docs/
+site_url: https://docs.swiftcam.app
 
 docs_dir: ./docs
 site_dir: ./site
