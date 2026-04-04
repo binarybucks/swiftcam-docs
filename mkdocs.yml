@@ -1,11 +1,12 @@
 site_name: Swiftcam Documentation
 site_description: Swiftcam push notification docs and Swiftcam server install notes
-site_url: https://docs.swiftcam.app
+site_url: https://swiftcam.app/docs
 
 docs_dir: ./docs
-site_dir: ./site
+site_dir: ./site/docs
 
 theme:
+  custom_dir: overrides
   palette:
     - media: "(prefers-color-scheme)"
       scheme: default     
@@ -61,4 +62,6 @@ nav:
     - Multi server: multi-server.md
     - Advanced camera settings: advanced-camera-settings.md
 
-  - Privacy policy: privacy.md
+  - Legal:
+    - Privacy policy: privacy.md
+    - Imprint: imprint.md

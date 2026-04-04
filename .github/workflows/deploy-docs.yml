@@ -24,7 +24,11 @@ jobs:
           python-version: '3.x'
 
       - name: Build docs
-        run: pip install -r requirements.txt && zensical build --clean --config-file mkdocs.yml
+        run: |
+          pip install -r requirements.txt
+          rm -rf site
+          zensical build --clean --config-file mkdocs.yml
+          cp -R static/. site/
 
       - uses: actions/upload-pages-artifact@v3
         with:
