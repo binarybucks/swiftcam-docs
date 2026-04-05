@@ -1,0 +1,11 @@
+# Roadmap
+
+Planned features for Swiftcam.
+
+- Receive push notitfications relayed locally through Swiftcam Server
+- Native macOS companion app built with SwiftUI
+- Frigate History Playback
+- go2rtc STUN Support
+
+
+Got more idea? Drop me an mail at [hi@swiftcam.app](mailto:hi@swiftcam.app)

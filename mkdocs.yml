@@ -62,6 +62,7 @@ nav:
     - Multi server: multi-server.md
     - Advanced camera settings: advanced-camera-settings.md
 
-  - Legal:
+  - About:
+    - Roadmap: roadmap.md
     - Privacy policy: privacy.md
     - Imprint: imprint.md
