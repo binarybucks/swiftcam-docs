@@ -1,13 +1,14 @@
 # Push Notifications
 
-When notications are enabled, Swiftcam devices automatically register with the push server at `https://push.swiftcam.app` and receive a static 128-bit `USER_ID` token.
+When notifications are enabled, Swiftcam devices automatically register with the push server at `https://push.swiftcam.app` and receive a static 256-bit `USER_ID` token.
 
 Use that `USER_ID` to send notifications to: `https://push.swiftcam.app/api/push/notify`
 
 
-## Multiple devices 
+## Device mapping
 
-Mutiple devices can be registerd with the same `USER_ID`. Just copy the `USER_ID` from your first devices, and paste it in the `Change User ID` form on your other devices.
+Each `USER_ID` maps to exactly one APNs device token.
+If another device registers with the same `USER_ID`, the new token replaces the previous one.
 
 
 ## Send Notification from command line
@@ -166,7 +167,7 @@ automation:
 
 ### Fields
 
-- `user_id` (string, required): static 128-bit user token as 64 hex chars.
+- `user_id` (string, required): static 256-bit user token as 64 hex chars.
 - `title` (string, required): push title.
 - `body` (string, required): push body text.
 - `snapshot_kind` (string, optional): `live`, `frigate_event`, or `url`.
@@ -192,10 +193,11 @@ automation:
 - `snapshot_kind=live` requires `camera_id` or `camera_name` (or `camera`).
 - `snapshot_kind=url` requires `snapshot_url`.
 - Unsupported `snapshot_kind` values are rejected.
+- Registering a new device token for an existing `user_id` replaces the previous token for that user.
 
 ### Responses
 
-- `200 OK`: delivered to at least one device (`status: "sent"` with counts).
+- `200 OK`: delivered to the registered device (`status: "sent"` with counts).
 - `202 Accepted`: user unknown (accepted response, no user existence leak).
 - `400 Bad Request`: invalid JSON or validation failure.
 - `409 Conflict`: no devices currently registered for the user.

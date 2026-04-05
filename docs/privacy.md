@@ -10,7 +10,7 @@ The Swiftcam Push Gateway server stores only the following information:
 
 - Device-specific APNS token
 - Device name
-- Timestamp of the last sent push message per APNS token
+- Mapping timestamps (`created_at` and `updated_at`) for the `user_id` to APNS token association
 
 The push notification API is designed so that no identifiable data is transferred besides the notification title, notification body, and camera name (unless camera UUID is used).
 
