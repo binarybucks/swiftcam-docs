@@ -61,6 +61,7 @@ nav:
     - Swiftcam Server: swiftcam-server.md
     - Multi server: multi-server.md
     - Advanced camera settings: advanced-camera-settings.md
+    - Live streaming: live-streaming.md
 
   - About:
     - Roadmap: roadmap.md
