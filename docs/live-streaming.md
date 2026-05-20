@@ -70,12 +70,9 @@ The `Stream` sheet lets you configure:
 
 - Destination server if multiple are configured
 - Stream name
-- Phone camera: front or back
 - Resolution
-- Video codec
 - Maximum video bitrate 
 - Color or black/white mode.
-- Audio 
 - Max Audio bitrate from 96 to 320 Kbps.
 
 ## Viewing the phone stream
