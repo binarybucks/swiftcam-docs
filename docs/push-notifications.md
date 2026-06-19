@@ -12,8 +12,14 @@ If another device registers with the same `USER_ID`, the new token replaces the 
 
 
 ## Send Notification from command line
-The following curl command sends a notification and a live snapshot from the configured snapshot provider for the camera named "Garden" is attached. Tapping the notifications directly opens the live stream for the camera. 
 
+A notification has two independent parts:
+
+- `snapshot`: the image attached to the alert (`type`: `live`, `frigate_event`, `frigate_review`, or `url`).
+- `open`: what Swiftcam shows when the notification is tapped (`type`: `live`, `frigate_event`, or `frigate_review`).
+
+### Live snapshot
+The following curl command attaches a live snapshot from the configured snapshot provider for the camera named "Garden". Tapping the notification opens the live stream for that camera.
 
 ```bash
 curl -X POST "https://push.swiftcam.app/api/push/notify" \
@@ -22,16 +28,48 @@ curl -X POST "https://push.swiftcam.app/api/push/notify" \
     "user_id": "YOUR_USER_ID",
     "title": "Bird detected",
     "body": "Garden",
-    "camera_name": "Garden",
-    "snapshot_kind": "live",
-    "open": "live"
+    "snapshot": { "type": "live" },
+    "open": { "type": "live", "camera_name": "Garden" }
+  }'
+```
+
+The live snapshot uses the camera referenced by `open` (`camera_name` or `camera_id`).
+
+### Frigate NVR event snapshot
+Attaches the Frigate event snapshot and opens the event details when tapped.
+
+```bash
+curl -X POST "https://push.swiftcam.app/api/push/notify" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "YOUR_USER_ID",
+    "title": "Person detected",
+    "body": "Front Door",
+    "snapshot": { "type": "frigate_event", "id": "1739987.123-abcdef" },
+    "open": { "type": "frigate_event", "id": "1739987.123-abcdef" }
+  }'
+```
+
+### Frigate NVR review snapshot
+Loads the review record, attaches its Frigate thumbnail, and opens the Review tab when tapped.
+
+```bash
+curl -X POST "https://push.swiftcam.app/api/push/notify" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "YOUR_USER_ID",
+    "title": "Review item detected",
+    "body": "Front Door",
+    "notification_id": "review-123",
+    "snapshot": { "type": "frigate_review", "id": "review-123" },
+    "open": { "type": "frigate_review", "id": "review-123" }
   }'
 ```
 
 ## Send Notification from Home Assistant 
 
 ### Home Assistant `rest_command`
-The following rest_command provides a shared command that can be used as action in Home Assistant. 
+The following rest_command provides a shared command that can be used as action in Home Assistant. It forwards the nested `snapshot` and `open` objects as-is, so the same command works for live, event, and review notifications.
 
 ```yaml
 rest_command:
@@ -44,11 +82,9 @@ rest_command:
         "user_id": "{{ user_id }}",
         "title": "{{ title }}",
         "body": "{{ body }}",
-        "camera_name": "{{ camera_name }}",
-        "event_id": "{{ event_id }}",
-        "playback_timestamp": "{{ playback_timestamp }}",
-        "snapshot_kind": "{{ snapshot_kind }}",
-        "open": "{{ open }}"
+        "notification_id": "{{ notification_id | default('') }}",
+        "snapshot": {{ snapshot | tojson }},
+        "open": {{ open | tojson }}
       }
 ```
 
@@ -70,9 +106,11 @@ automation:
           user_id: "YOUR_USER_ID"
           title: "Motion detected"
           body: "Garden"
-          camera_name: "Garden"
-          snapshot_kind: "live"
-          open: "live"
+          snapshot:
+            type: live
+          open:
+            type: live
+            camera_name: "Garden"
 ```
 
 ### Home Assistant Frigate NVR Event Notification
@@ -105,46 +143,47 @@ automation:
           user_id: "YOUR_USER_ID"
           title: "{{ label }} detected"
           body: "{{ camera }}"
-          camera_name: "{{ camera }}"
-          event_id: "{{ event_id }}"
-          snapshot_kind: "frigate_event"
-          open: "event"
+          snapshot:
+            type: frigate_event
+            id: "{{ event_id }}"
+          open:
+            type: frigate_event
+            id: "{{ event_id }}"
 ```
 
-### Home Assistant Frigate NVR Event Notification (Open Playback At Event Timestamp)
-Below is an example automation that opens Swiftcam camera playback directly at the Frigate NVR event timestamp.  
-It still uses the Frigate NVR event snapshot for the notification image.
+### Home Assistant Frigate NVR Review Notification
+Below is an example automation to send a notification for a Frigate NVR review item to Swiftcam.
+The app loads the review record, attaches its Frigate thumbnail, and opens the Review tab when tapped.
 
 ```yaml
 automation:
-  - alias: "Swiftcam playback from Frigate NVR MQTT events"
+  - alias: "Swiftcam push from Frigate NVR MQTT reviews"
     mode: parallel
     trigger:
       - platform: mqtt
-        topic: frigate/events
+        topic: frigate/reviews
     condition:
+      # Send only when a new review item is created.
       - condition: template
         value_template: "{{ trigger.payload_json.type == 'new' }}"
     action:
       - variables:
-          event: "{{ trigger.payload_json.after }}"
-          camera: "{{ event.camera }}"
-          label: "{{ event.label | title }}"
-          event_id: "{{ event.id }}"
-          event_start: "{{ event.start_time }}"
+          review: "{{ trigger.payload_json.after }}"
+          camera: "{{ review.camera }}"
+          review_id: "{{ review.id }}"
       - service: rest_command.swiftcam_notify
         data:
           user_id: "YOUR_USER_ID"
-          title: "{{ label }} detected"
+          title: "Review item detected"
           body: "{{ camera }}"
-          camera_name: "{{ camera }}"
-          event_id: "{{ event_id }}"
-          playback_timestamp: "{{ event_start }}"
-          snapshot_kind: "frigate_event"
-          open: "playback"
+          notification_id: "{{ review_id }}"
+          snapshot:
+            type: frigate_review
+            id: "{{ review_id }}"
+          open:
+            type: frigate_review
+            id: "{{ review_id }}"
 ```
-
-
 
 ## API: `/api/push/notify`
 
@@ -155,13 +194,11 @@ automation:
 ```json
 {
   "user_id": "64-char-hex-user-id",
-  "title": "Bird detected",
+  "title": "Review item detected",
   "body": "Front Door",
-  "camera_name": "Front Door",
-  "event_id": "1739987.123",
-  "playback_timestamp": 1739987123.456,
-  "snapshot_kind": "frigate_event",
-  "open": "playback"
+  "notification_id": "review-123",
+  "snapshot": { "type": "frigate_review", "id": "review-123" },
+  "open": { "type": "frigate_review", "id": "review-123" }
 }
 ```
 
@@ -170,37 +207,17 @@ automation:
 - `user_id` (string, required): static 256-bit user token as 64 hex chars.
 - `title` (string, required): push title.
 - `body` (string, required): push body text.
-- `snapshot_kind` (string, optional): `live`, `frigate_event`, or `url`.
-- `open` (string, optional): `live` (default), `event`, or `playback`.
-- `event_id` (string, required when `snapshot_kind=frigate_event`).
-- `playback_timestamp` (number|string, required when `open=playback`): Unix timestamp (seconds; milliseconds also supported).
-- `camera_id` (string, optional): camera identifier.
-- `camera_name` (string, optional): camera name.
-- `camera` (string, optional): compatibility alias for camera name.
-- `snapshot_url` (string, required when `snapshot_kind=url`).
-- `badge` (integer, optional).
-- `sound` (string, optional).
-- `payload` (object, optional): custom payload values.
-- `collapse_id` (string, optional).
-- `thread_id` (string, optional).
-- `expires_in_seconds` (integer, optional).
+- `notification_id` (string, optional): stable notification identifier. It is added to the iOS payload and used as the APNs collapse ID.
+- `snapshot` (object, optional): the image attached to the alert.
+  - `snapshot.type` (string): `live`, `frigate_event`, `frigate_review`, or `url`.
+  - `snapshot.id` (string, required when `snapshot.type` is `frigate_event` or `frigate_review`): Frigate event/review identifier.
+  - `snapshot.url` (string, required when `snapshot.type=url`): direct image URL.
+  - For `snapshot.type=live`, the snapshot is fetched for the camera referenced by `open`.
+- `open` (object, optional): the destination opened when the notification is tapped.
+  - `open.type` (string): `live`, `frigate_event`, or `frigate_review`.
+  - `open.camera_id` / `open.camera_name` (string, one required when `open.type=live`): camera to open live.
+  - `open.id` (string, required when `open.type` is `frigate_event` or `frigate_review`): Frigate event/review identifier.
 
-### Validation Rules
+### Updating a notification
 
-- `title` and `body` must be present.
-- `open=event` requires `snapshot_kind=frigate_event`.
-- `open=playback` requires `camera_id` or `camera_name` (or `camera`) and `playback_timestamp`.
-- `snapshot_kind=live` requires `camera_id` or `camera_name` (or `camera`).
-- `snapshot_kind=url` requires `snapshot_url`.
-- Unsupported `snapshot_kind` values are rejected.
-- Registering a new device token for an existing `user_id` replaces the previous token for that user.
-
-### Responses
-
-- `200 OK`: delivered to the registered device (`status: "sent"` with counts).
-- `202 Accepted`: user unknown (accepted response, no user existence leak).
-- `400 Bad Request`: invalid JSON or validation failure.
-- `409 Conflict`: no devices currently registered for the user.
-- `410 Gone`: all device tokens became unregistered.
-- `429 Too Many Requests`: rate limit exceeded.
-- `502 Bad Gateway`: APNs delivery failed for all devices.
+Send another request with the same `notification_id` and its new title/body. The gateway uses that ID as APNs' collapse ID, so APNs keeps only the latest pending notification and updates an already displayed one in place — silently, and without moving it to the top of Notification Center.
